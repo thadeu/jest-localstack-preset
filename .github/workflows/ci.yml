@@ -35,5 +35,5 @@ jobs:
 
       - name: Yarn Jest
         run: yarn test
-        environment:
+        env:
           LOCALSTACK_DEBUG: true
