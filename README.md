@@ -21,7 +21,7 @@ $ npm i https://github.com/thadeu/jest-localstack-preset.git
 ## Dependencies
 
 - Docker
-- LocalStack Image
+- [LocalStack Image](https://docs.localstack.cloud/get-started/#starting-localstack-with-docker)
 - NodeJS >= 12.x
 
 ## Configuration
