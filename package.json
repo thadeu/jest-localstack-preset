@@ -1,5 +1,5 @@
 {
-  "name": "jest-localstack-preset",
+  "name": "@thadeu/jest-localstack-preset",
   "version": "1.0.0",
   "main": "jest-preset.js",
   "repository": "git@github.com:thadeu/jest-localstack-preset.git",
