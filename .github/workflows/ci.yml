@@ -7,9 +7,6 @@ jobs:
     name: jest
     runs-on: ubuntu-latest
 
-    environment:
-      LOCALSTACK_DEBUG: true
-
     services:
       localstack:
         image: localstack/localstack
@@ -38,3 +35,5 @@ jobs:
 
       - name: Yarn Jest
         run: yarn test
+        environment:
+          LOCALSTACK_DEBUG: true
