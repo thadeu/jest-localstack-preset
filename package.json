@@ -1,0 +1,82 @@
+{
+  "name": "jest-localstack-preset",
+  "version": "1.0.0",
+  "main": "jest-preset.js",
+  "repository": "git@github.com:thadeu/jest-localstack-preset.git",
+  "homepage": "https://github.com/thadeu/jest-localstack-preset#README",
+  "bugs": {
+    "url": "https://github.com/thadeu/jest-localstack-preset/ISSUES"
+  },
+  "engines": {
+    "node": ">= 12"
+  },
+  "keywords": [
+    "jest",
+    "aws",
+    "localstack",
+    "jest preset",
+    "jest environment",
+    "jest localstack preset",
+    "jest dynamo localstack",
+    "jest dynamo"
+  ],
+  "author": {
+    "name": "Thadeu Esteves",
+    "email": "tadeuu@gmail.com",
+    "url": "https://github.com/thadeu"
+  },
+  "files": [
+    "jest-preset.js",
+    "setup.js",
+    "teardown.js"
+  ],
+  "jest": {
+    "preset": "./jest-preset.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "coverage": "jest --coverage",
+    "lint": "eslint . --fix",
+    "test": "cross-env DEBUG=jest-localstack-preset LOCALSTACK_SHOW_LOGS=false jest . --runInBand --detectOpenHandles"
+  },
+  "peerDependencies": {
+    "aws-sdk": "2.x.x"
+  },
+  "dependencies": {
+    "cwd": "0.10.0",
+    "debug": "^4.1.1",
+    "dockerode": "^3.3.2"
+  },
+  "devDependencies": {
+    "aws-sdk": "2.528.0",
+    "cross-env": "^5.2.1",
+    "eslint": "^6.4.0",
+    "eslint-config-prettier": "^6.3.0",
+    "eslint-plugin-jest": "^22.17.0",
+    "eslint-plugin-jest-formatting": "^1.1.0",
+    "eslint-plugin-json-format": "^2.0.1",
+    "eslint-plugin-prettier": "^3.1.1",
+    "husky": "3.0.5",
+    "jest": "24.9.0",
+    "lint-staged": "9.2.5",
+    "prettier": "^1.18.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ],
+    "*.{html,json,md,yml}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "license": "MIT"
+}

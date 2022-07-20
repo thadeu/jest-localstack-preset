@@ -1,0 +1,17 @@
+{
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 2018
+  },
+  "rules": {
+    "no-console":"off",
+    "no-undef": "off"
+  },
+  "env": {
+      "es6":true,
+      "commonjs": true,
+      "node": true,
+      "shared-node-browser": true,
+      "mocha": true
+    }
+}
