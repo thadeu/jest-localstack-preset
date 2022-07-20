@@ -2,8 +2,6 @@
 
 [![ci](https://github.com/thadeu/jest-localstack-preset/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/thadeu/jest-localstack-preset/actions/workflows/ci.yml)
 
-🥾 A simple way to do testing AWS Services and Jest or Serverless and Jest
-
 ## Install
 
 Install via yarn or npm
