@@ -39,10 +39,10 @@
   "scripts": {
     "coverage": "jest --coverage",
     "lint": "eslint . --fix",
-    "test": "cross-env DEBUG=jest-localstack-preset LOCALSTACK_SHOW_LOGS=true jest . --runInBand --detectOpenHandles"
+    "test": "cross-env DEBUG=jest-localstack-preset LOCALSTACK_DEBUG=false jest . --runInBand --detectOpenHandles"
   },
   "peerDependencies": {
-    "aws-sdk": "2.x.x"
+    "aws-sdk": "^2.x.x"
   },
   "dependencies": {
     "cwd": "0.10.0",
@@ -50,7 +50,7 @@
     "dockerode": "^3.3.2"
   },
   "devDependencies": {
-    "aws-sdk": "2.528.0",
+    "aws-sdk": "^2",
     "cross-env": "^5.2.1",
     "eslint": "^6.4.0",
     "eslint-config-prettier": "^6.3.0",

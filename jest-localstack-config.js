@@ -1,7 +1,13 @@
 module.exports = {
-  services: ['dynamodb', 'kinesis', 'lambda', 'apigateway', 'ssm'],
-  showLog: JSON.parse(process.env.LOCALSTACK_SHOW_LOGS || false),
-  dynamoTables: [
+  // https://docs.localstack.cloud/aws/feature-coverage/
+  services: ['dynamodb', 'kinesis', 's3', 'apigateway', 'lambda'],
+  showLog: JSON.parse(process.env.LOCALSTACK_DEBUG || false),
+  S3Buckets: [
+    {
+      Bucket: 'examplebucket',
+    },
+  ],
+  DynamoDB: [
     {
       TableName: `users_test`,
       BillingMode: 'PAY_PER_REQUEST',

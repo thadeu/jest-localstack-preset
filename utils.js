@@ -7,6 +7,7 @@ const readline = require('readline')
 
 const DynamoDB = require('aws-sdk/clients/dynamodb')
 const Kinesis = require('aws-sdk/clients/kinesis')
+const S3 = require('aws-sdk/clients/s3')
 
 const LABEL_NAME = 'purpose'
 const LABEL_VALUE = 'jest-localstack-preset'
@@ -14,6 +15,7 @@ const LABEL_VALUE = 'jest-localstack-preset'
 const DEFAULT_SERVICES = {
   kinesis: 4566,
   dynamodb: 4566,
+  s3: 4566,
 }
 
 const DEFAULT_PORT = 4566
@@ -64,6 +66,7 @@ async function createContainer(config, services) {
   let docker = new Docker()
 
   let container = await docker.createContainer({
+    name: 'jest-localstack-preset_main',
     Image: config.image,
     AttachStdin: false,
     AttachStdout: true,
@@ -106,9 +109,17 @@ function buildExposedPortsAndHostConfig(services) {
 async function factoryConfig() {
   const pathConfig = path.resolve(cwd(), 'jest-localstack-config.js')
 
-  const config = require(pathConfig)
+  try {
+    const config = require(pathConfig)
+    let result = { ...CONFIG_DEFAULTS, ...(typeof config === 'function' ? await config() : config) }
 
-  return { ...CONFIG_DEFAULTS, ...(typeof config === 'function' ? await config() : config) }
+    return result
+  } catch (error) {
+    return {
+      ...CONFIG_DEFAULTS,
+      services: Object.entries(DEFAULT_SERVICES).map(o => o.join(':')),
+    }
+  }
 }
 
 function buildEnv(config) {
@@ -116,6 +127,9 @@ function buildEnv(config) {
 
   if (config.services) {
     env.push(`SERVICES=${Array.isArray(config.services) ? config.services.join(',') : config.services}`)
+    env.push(`DYNAMODB_OPTIMIZE_DB_BEFORE_STARTUP=1`)
+    env.push(`EAGER_SERVICE_LOADING=1`)
+    env.push(`TRANSPARENT_LOCAL_ENDPOINTS=1`)
   }
 
   return env
@@ -156,7 +170,8 @@ async function waitForReady(container, config) {
 }
 
 function getServices(config) {
-  let { services } = config
+  const defaultServices = Object.entries(DEFAULT_SERVICES).map(o => o.join(':'))
+  let { services } = { services: defaultServices, ...config }
 
   if (typeof services === 'string') {
     services = services.split(',')
@@ -173,41 +188,68 @@ function getServices(config) {
 }
 
 async function initializeServices(container, config, services) {
-  debug('Checking Services...')
+  debug(`Checking Services...`)
 
-  await Promise.all([createDynamoTables(config, services), createKinesisStreams(config, services)])
+  await Promise.all([
+    createDynamoTables(config, services),
+    createKinesisStreams(config, services),
+    createS3Buckets(config, services),
+  ])
+
   debug('All Services Running!')
 
   return container
 }
 
 async function createDynamoTables(config, services) {
-  if (Array.isArray(config.dynamoTables) && services.dynamodb) {
+  if (Array.isArray(config.DynamoDB) && services.dynamodb) {
     const dynamoDB = new DynamoDB({
       endpoint: `http://localhost:${services.dynamodb || DEFAULT_PORT}`,
       sslEnabled: false,
       region: 'us-east-1',
     })
 
-    debug('CreateDynamoTables initializing')
-    await Promise.all(config.dynamoTables.map(dynamoTable => dynamoDB.createTable(dynamoTable).promise()))
-    debug('createDynamoTables finished')
+    const result = await Promise.all(config.DynamoDB.map(dynamoTable => dynamoDB.createTable(dynamoTable).promise()))
+    debug('createDynamoTables OK')
 
-    return
+    return result
   }
 
   return Promise.resolve()
 }
 
 async function createKinesisStreams(config, services) {
-  if (Array.isArray(config.kinesisStreams) && services.kinesis) {
+  if (Array.isArray(config.Kinesis) && services.kinesis) {
     const kinesis = new Kinesis({
-      endpoint: `localhost:${services.kinesis}`,
-      sslEnabled: false,
-      region: 'local-env',
+      endpoint: `http://localhost:${services.kinesis}`,
+      region: 'us-east-1',
     })
 
-    return Promise.all(config.kinesisStreams.map(kinesisStream => kinesis.createStream(kinesisStream).promise()))
+    const promises = config.Kinesis.map(kinesisStream => {
+      return kinesis.createStream(kinesisStream).promise()
+    })
+
+    const result = await Promise.all(promises)
+
+    debug('createKinesisStreams OK')
+
+    return result
+  }
+
+  return Promise.resolve()
+}
+
+async function createS3Buckets(config, services) {
+  if (Array.isArray(config.S3Buckets) && services.s3) {
+    const s3 = new S3({
+      endpoint: `http://localhost:${services.s3}`,
+      s3ForcePathStyle: true,
+    })
+
+    const result = await Promise.all(config.S3Buckets.map(s3Bucket => s3.createBucket(s3Bucket).promise()))
+    debug('createS3Buckets OK')
+
+    return result
   }
 
   return Promise.resolve()

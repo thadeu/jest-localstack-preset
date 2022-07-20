@@ -1,3 +1,5 @@
+const debug = require('debug')('jest-localstack-preset')
+
 const {
   createContainer,
   stopOldContainers,
@@ -17,6 +19,8 @@ process.env.AWS_ENDPOINT_URL = 'http://localhost:4566'
 process.env.AWS_DYNAMODB_ENDPOINT_URL = 'http://localhost:4566'
 
 async function main() {
+  debug('\nSetup')
+
   const config = await factoryConfig()
   const services = getServices(config)
 
