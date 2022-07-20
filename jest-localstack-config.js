@@ -1,6 +1,6 @@
 module.exports = {
   services: ['dynamodb', 'kinesis', 'lambda', 'apigateway', 'ssm'],
-  showLog: process.env.LOCALSTACK_SHOW_LOGS || false,
+  showLog: JSON.parse(process.env.LOCALSTACK_SHOW_LOGS || false),
   dynamoTables: [
     {
       TableName: `users_test`,
