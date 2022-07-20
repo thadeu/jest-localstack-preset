@@ -54,7 +54,7 @@ module.exports = {
 }
 ```
 
-Use custom endpoint `process.env.AWS_ENDPOINT_URL` in the AWS clients in your code., for example:
+Use custom endpoint `process.env.AWS_ENDPOINT_URL` for general or specific to DynamoDB `process.env.AWS_DYNAMODB_ENDPOINT_URL` in the AWS clients in your code., for example:
 
 ```js
 const AWS = require('aws-sdk')
@@ -76,7 +76,10 @@ const Table = new AWS.DynamoDB.DocumentClient({
 })
 
 it('should insert item into table', async () => {
-  await Table.put({ TableName: 'users_test', Item: { pk: '1', sk: 'jest-localstack-preset' } }).promise()
+  await Table.put({
+    TableName: 'users_test',
+    Item: { pk: '1', sk: 'jest-localstack-preset' },
+  }).promise()
 
   const { Count } = await Table.scan({ TableName: 'users_test' }).promise()
   expect(Count).toBe(1)
@@ -128,12 +131,11 @@ export default class UserReposity {
 }
 
 // UserReposity.test.js
-const UserReposity = require('./UserReposity')
+import UserReposity from './UserReposity'
 
 describe('UserReposity', function() {
   it('should insert item into repository', async () => {
     await UserReposity.save({
-      TableName: 'users',
       Item: { pk: '1', sk: 'jest-localstack-preset' },
     })
 
@@ -143,7 +145,7 @@ describe('UserReposity', function() {
 })
 ```
 
-In this moment, all process will be make into localstack.
+In this moment, all process will be make using [LocalStack](https://github.com/localstack/localstack).
 
 ## How Its Works?
 
@@ -162,7 +164,6 @@ You can enabled debug flag using your custom environment.
 | Package                      | LocalStack              |
 | ---------------------------- | ----------------------- |
 | DEBUG=jest-localstack-preset | LOCALSTACK_DEBUG=[false | true] |
-|                              |                         |
 
 ## Contributing
 
