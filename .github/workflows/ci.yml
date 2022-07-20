@@ -4,11 +4,17 @@ on: push
 
 jobs:
   jest:
-    name: ${{ github.ref_name }}:${{ github.event.inputs.stage }}
+    name: jest
     runs-on: ubuntu-latest
+
+    services:
+      localstack:
+        image: localstack/localstack
+
     defaults:
       run:
         working-directory: ./
+
     steps:
       - uses: actions/checkout@v2
 
