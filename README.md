@@ -64,6 +64,8 @@ module.exports = {
 }
 ```
 
+## Usage
+
 Use custom endpoint `process.env.AWS_ENDPOINT_URL` for general or specific to DynamoDB `process.env.AWS_DYNAMODB_ENDPOINT_URL` in the AWS clients in your code., for example:
 
 ```js
