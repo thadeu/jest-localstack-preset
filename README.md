@@ -4,7 +4,7 @@
 
 🥾 A simple way to do testing AWS Services and Jest or Serverless and Jest
 
-## Usage
+## Install
 
 Install via yarn or npm
 
@@ -17,6 +17,14 @@ or
 ```bash
 $ npm i https://github.com/thadeu/jest-localstack-preset.git
 ```
+
+## Dependencies
+
+- Docker
+- LocalStack Image
+- NodeJS >= 12.x
+
+## Configuration
 
 Configure `jest.config.js`, adding a custom preset
 
