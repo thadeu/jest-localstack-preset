@@ -51,7 +51,7 @@ async function stopOldContainers() {
 
       if (deadContainer) {
         try {
-          debug(`\nKill container ${deadContainer.id}`)
+          debug(`Kill container ${deadContainer.id}`)
           await deadContainer.kill()
           await deadContainer.remove({ force: true })
         } catch (error) {

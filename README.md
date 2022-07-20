@@ -165,6 +165,54 @@ You can enabled debug flag using your custom environment.
 | ---------------------------- | ----------------------- |
 | DEBUG=jest-localstack-preset | LOCALSTACK_DEBUG=[false | true] |
 
+## CI (Continuous Integration)
+
+- Github Actions, see [.github/workflows/ci](.github/workflows/ci.yml)
+
+Simple example
+
+```yml
+name: ci
+
+on: push
+
+jobs:
+  jest:
+    name: jest
+    runs-on: ubuntu-latest
+
+    services:
+      localstack:
+        image: localstack/localstack
+
+    defaults:
+      run:
+        working-directory: ./
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-modules-
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.17.x
+
+      - name: Install Yarn Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Yarn Jest
+        run: yarn test
+        env:
+          LOCALSTACK_DEBUG: true
+```
+
 ## Contributing
 
 Once you've made your great commits (include tests, please):
