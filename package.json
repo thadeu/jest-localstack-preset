@@ -39,7 +39,7 @@
   "scripts": {
     "coverage": "jest --coverage",
     "lint": "eslint . --fix",
-    "test": "cross-env DEBUG=jest-localstack-preset LOCALSTACK_DEBUG=false jest . --runInBand --detectOpenHandles"
+    "test": "cross-env DEBUG=jest-localstack-preset LOCALSTACK_DEBUG=true jest . --runInBand --detectOpenHandles"
   },
   "peerDependencies": {
     "aws-sdk": "^2.x.x"
