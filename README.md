@@ -42,6 +42,7 @@ module.exports = {
   services: ['dynamodb', 'kinesis', 's3', 'apigateway', 'lambda'],
   showLog: false,
   readyTimeout: 10000,
+  autoPullImage: true,
   S3Buckets: [
     {
       Bucket: 'examplebucket',
@@ -63,6 +64,15 @@ module.exports = {
   ],
 }
 ```
+
+| Key           | Value    | Description                                        |
+| ------------- | -------- | -------------------------------------------------- |
+| readyTimeout  | boolean  | Define timeout in milliseconds to create container |
+| autoPullImage | boolean  | Define if we go to download image automatically    |
+| showLog       | boolean  | Define show logs for localstack                    |
+| services      | [string] | List of AWS Services                               |
+
+> You can define environment `JEST_LOCALSTACK_AUTO_PULLING` to precede autoPullImage configuration in your CI/CD
 
 ## Usage
 

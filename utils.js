@@ -1,4 +1,7 @@
-const debug = require('debug')('jest-localstack-preset')
+const LABEL_NAME = 'purpose'
+const LABEL_VALUE = 'jest-localstack-preset'
+
+const debug = require('debug')(LABEL_VALUE)
 const Docker = require('dockerode')
 
 const path = require('path')
@@ -8,9 +11,6 @@ const readline = require('readline')
 const DynamoDB = require('aws-sdk/clients/dynamodb')
 const Kinesis = require('aws-sdk/clients/kinesis')
 const S3 = require('aws-sdk/clients/s3')
-
-const LABEL_NAME = 'purpose'
-const LABEL_VALUE = 'jest-localstack-preset'
 
 const DEFAULT_SERVICES = {
   kinesis: 4566,
@@ -24,6 +24,7 @@ const CONFIG_DEFAULTS = {
   image: 'localstack/localstack',
   readyTimeout: 120000,
   showLog: false,
+  autoPullImage: true,
 }
 
 const isJestRuning = process.env.JEST_WORKER_ID
@@ -62,8 +63,44 @@ async function stopOldContainers() {
   }
 }
 
+async function dockerPullLocalStack(repoTag) {
+  let docker = new Docker()
+
+  return new Promise((resolve, reject) => {
+    docker.pull(repoTag, (err, output) => {
+      if (err) {
+        console.error(err)
+        reject(err)
+      }
+
+      if (output) {
+        output.pipe(process.stdout, { end: true })
+        output.on('end', resolve)
+      }
+    })
+  })
+}
+
+async function isDockerLocalStackBlank() {
+  let docker = new Docker()
+  const allImages = await docker.listImages()
+  const images = allImages.filter(i => i.RepoTags.some(r => r.includes('localstack/localstack')))
+
+  return !images || images.length <= 0
+}
+
 async function createContainer(config, services) {
   let docker = new Docker()
+
+  let autoPullImage = JSON.parse(process.env.JEST_LOCALSTACK_AUTO_PULLING || config.autoPullImage)
+
+  if ((await isDockerLocalStackBlank()) && autoPullImage) {
+    debug(`You need to build an image to ${config.image}\n`)
+
+    await dockerPullLocalStack(config.image)
+    debug(`\nImage ${config.image} complete downloaded...`)
+    debug(`Creating container...`)
+  }
 
   let container = await docker.createContainer({
     name: 'jest-localstack-preset_main',

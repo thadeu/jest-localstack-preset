@@ -2,6 +2,7 @@ module.exports = {
   // https://docs.localstack.cloud/aws/feature-coverage/
   services: ['dynamodb', 'kinesis', 's3', 'apigateway', 'lambda'],
   showLog: JSON.parse(process.env.LOCALSTACK_DEBUG || false),
+  autoPullImage: true,
   S3Buckets: [
     {
       Bucket: 'examplebucket',
