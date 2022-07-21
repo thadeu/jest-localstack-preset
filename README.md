@@ -231,6 +231,7 @@ jobs:
         run: yarn test
         env:
           LOCALSTACK_DEBUG: true
+          JEST_LOCALSTACK_AUTO_PULLING: true
 ```
 
 ## Disclaimer
