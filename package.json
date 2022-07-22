@@ -27,11 +27,11 @@
   },
   "files": [
     "*",
-    "!example/*/**",
-    "!spec/*/**",
+    "!example/",
+    "!spec/",
     "!test/",
-    "!node_modules/*",
-    "!.github/*"
+    "!node_modules/",
+    "!.github/"
   ],
   "jest": {
     "preset": "./jest-preset.js",
