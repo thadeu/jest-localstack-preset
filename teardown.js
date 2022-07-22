@@ -1,7 +1,7 @@
-const debug = require('debug')('jest-localstack-preset')
-const { stopOldContainers } = require('./utils')
+const { stopOldContainers, spinner } = require('./utils')
 
 module.exports = async function() {
-  debug('Teardown')
   await stopOldContainers()
+
+  spinner.stopAndPersist({ symbol: '✨', text: ' Done teardown' })
 }

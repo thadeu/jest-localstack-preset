@@ -1,5 +1,3 @@
-const debug = require('debug')('jest-localstack-preset')
-
 const {
   createContainer,
   stopOldContainers,
@@ -7,6 +5,7 @@ const {
   initializeServices,
   getServices,
   factoryConfig,
+  spinner,
 } = require('./utils')
 
 // ==========================================
@@ -19,7 +18,7 @@ process.env.AWS_ENDPOINT_URL = 'http://localhost:4566'
 process.env.AWS_DYNAMODB_ENDPOINT_URL = 'http://localhost:4566'
 
 async function main() {
-  debug('\nSetup')
+  spinner.start('Setup')
 
   const config = await factoryConfig()
   const services = getServices(config)
@@ -33,7 +32,9 @@ async function main() {
     await container.start()
     await waitForReady(container, config)
     await initializeServices(container, config, services)
+    spinner.stop()
   } catch (error) {
+    spinner.warn('Error')
     await stopOldContainers().then(() => Promise.reject(error))
   }
 }

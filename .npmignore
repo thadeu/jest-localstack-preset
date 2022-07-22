@@ -1,10 +1,11 @@
-.idea/
-coverage/
-node_modules/
+.idea/*
+coverage/*
+node_modules/*
 temp
 yarn.lock
 *.log
 .DS_Store
-dist/
-test/
-.github/
+dist/*
+test/*
+.github/*
+./example/*/**

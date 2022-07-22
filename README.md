@@ -3,6 +3,7 @@
 🥾 A simple way to do testing AWS Services and Jest or Serverless and Jest
 
 [![ci](https://github.com/thadeu/jest-localstack-preset/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/thadeu/jest-localstack-preset/actions/workflows/ci.yml)
+[![Npm package version](https://badgen.net/npm/v/@thadeu/jest-localstack-preset)](https://www.npmjs.com/package/@thadeu/jest-localstack-preset)
 
 ## Install
 
@@ -26,16 +27,17 @@ $ npm i -D @thadeu/jest-localstack-preset
 
 ## Configuration
 
-Configure `jest.config.js`, adding a custom preset
+Configure `jest.config.js`, adding a custom `preset` and `setupFiles`
 
 ```js
 module.exports = {
   preset: '@thadeu/jest-localstack-preset',
+  setupFiles: ['./jest.setup.js'],
   ...
 }
 ```
 
-Create `jest-localstack-preset` file, for example.
+Create `jest.localstack.js` file with your required services, for example.
 
 ```js
 module.exports = {
@@ -74,9 +76,36 @@ module.exports = {
 
 > You can define environment `JEST_LOCALSTACK_AUTO_PULLING` to precede autoPullImage configuration in your CI/CD
 
+Create a file `jest.setup.js`
+
+```js
+const AWS = require('aws-sdk')
+
+const { configureMockSDK } = require('@thadeu/jest-localstack-preset/aws')
+configureMockSDK(AWS)
+```
+
 ## Usage
 
-Use custom endpoint `process.env.AWS_ENDPOINT_URL` for general or specific to DynamoDB `process.env.AWS_DYNAMODB_ENDPOINT_URL` in the AWS clients in your code., for example:
+When you use `configureMockSDK` function, we configure many things to you transparently. This means that you going to use `aws-sdk` normally, without change.
+
+> We will apply yhis
+
+```js
+{
+  accessKeyId: 'access-key',
+  secretAccessKey: 'secret-key',
+  region: 'us-east-1',
+  endpoint: 'http://localhost:4566',
+  s3ForcePathStyle: true,
+}
+```
+
+But, if you need configure in runtime, enjoy and to do that. Anywhere you can use the `endpoint_url` to access localstack services locally.
+
+So, use custom endpoint `process.env.AWS_ENDPOINT_URL` for general or specific to DynamoDB `process.env.AWS_DYNAMODB_ENDPOINT_URL` in the AWS clients in your code.
+
+For example to use DynamoDB or S3.
 
 ```js
 const AWS = require('aws-sdk')
@@ -134,10 +163,18 @@ Usually you go to use other files, class and functions.
 // UserReposity.js
 const AWS = require('aws-sdk')
 
-const Table = new AWS.DynamoDB.DocumentClient({
-  endpoint: process.env.AWS_DYNAMODB_ENDPOINT_URL,
-  region: process.env.AWS_REGION,
-})
+// =================================================
+// WITH configureMockSDK in your setupFiles
+// =================================================
+const Table = new AWS.DynamoDB.DocumentClient()
+
+// =================================================
+// WITHOUT configureMockSDK
+// =================================================
+// const Table = new AWS.DynamoDB.DocumentClient({
+//   endpoint: process.env.AWS_DYNAMODB_ENDPOINT_URL,
+//   region: process.env.AWS_REGION,
+// })
 
 export default class UserReposity {
   static async all(props = {}) {
@@ -183,9 +220,10 @@ For more AWS Service available visit, https://docs.localstack.cloud/aws/feature-
 
 You can enabled debug flag using your custom environment.
 
-| Package                      | LocalStack              |
-| ---------------------------- | ----------------------- |
-| DEBUG=jest-localstack-preset | LOCALSTACK_DEBUG=[false | true] |
+| Envs                         | Type    |
+| ---------------------------- | ------- |
+| LOCALSTACK_DEBUG             | boolean |
+| JEST_LOCALSTACK_AUTO_PULLING | boolean |
 
 ## CI (Continuous Integration)
 

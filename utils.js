@@ -1,7 +1,6 @@
 const LABEL_NAME = 'purpose'
-const LABEL_VALUE = 'jest-localstack-preset'
+const LABEL_VALUE = 'jest_localstack'
 
-const debug = require('debug')(LABEL_VALUE)
 const Docker = require('dockerode')
 
 const path = require('path')
@@ -11,6 +10,9 @@ const readline = require('readline')
 const DynamoDB = require('aws-sdk/clients/dynamodb')
 const Kinesis = require('aws-sdk/clients/kinesis')
 const S3 = require('aws-sdk/clients/s3')
+
+const ora = require('ora')
+const spinner = ora()
 
 const DEFAULT_SERVICES = {
   kinesis: 4566,
@@ -52,7 +54,7 @@ async function stopOldContainers() {
 
       if (deadContainer) {
         try {
-          debug(`Kill container ${deadContainer.id}`)
+          // spinner.stop(`Stop container ${deadContainer.id}`)
           await deadContainer.kill()
           await deadContainer.remove({ force: true })
         } catch (error) {
@@ -61,6 +63,8 @@ async function stopOldContainers() {
       }
     }
   }
+
+  spinner.stop()
 }
 
 async function dockerPullLocalStack(repoTag) {
@@ -95,15 +99,16 @@ async function createContainer(config, services) {
   let autoPullImage = JSON.parse(process.env.JEST_LOCALSTACK_AUTO_PULLING || config.autoPullImage)
 
   if ((await isDockerLocalStackBlank()) && autoPullImage) {
-    debug(`You need to build an image to ${config.image}\n`)
+    spinner.warn(`You need to build an image to ${config.image}\n`)
 
     await dockerPullLocalStack(config.image)
-    debug(`\nImage ${config.image} complete downloaded...`)
-    debug(`Creating container...`)
+    spinner.start(`Image ${config.image} complete downloaded...`)
+
+    spinner.start(`Creating container...`)
   }
 
   let container = await docker.createContainer({
-    name: 'jest-localstack-preset_main',
+    name: 'jest_localstack_main',
     Image: config.image,
     AttachStdin: false,
     AttachStdout: true,
@@ -144,9 +149,11 @@ function buildExposedPortsAndHostConfig(services) {
 }
 
 async function factoryConfig() {
-  const pathConfig = path.resolve(cwd(), 'jest-localstack-config.js')
+  const pathConfig = path.resolve(cwd(), 'jest.localstack.js')
 
   try {
+    spinner.start('Building config')
+
     const config = require(pathConfig)
     let result = { ...CONFIG_DEFAULTS, ...(typeof config === 'function' ? await config() : config) }
 
@@ -182,21 +189,26 @@ async function waitForReady(container, config) {
     .then(stream => {
       const readInterface = readline.createInterface({
         input: stream,
-        output: config.showLog ? process.stdout : undefined,
+        output: undefined,
         console: false,
       })
 
       return new Promise((resolve, reject) => {
         const timer = setTimeout(() => {
           stream.destroy()
-          reject('Error: timeout before LocalStack was ready.')
+          reject('Error: timeout before localstack was ready.')
         }, config.readyTimeout)
 
-        debug('\nWaiting for LocalStack to be ready...')
+        spinner.start('Waiting for localstack to be ready...')
 
         readInterface.on('line', function(line) {
+          if (config.showLog) {
+            spinner.stop()
+            console.log(line)
+          }
+
           if (line.match(/Ready/)) {
-            debug("It's Ready!")
+            spinner.succeed('Environment is Ready!')
 
             clearTimeout(timer)
             resolve(container)
@@ -225,7 +237,7 @@ function getServices(config) {
 }
 
 async function initializeServices(container, config, services) {
-  debug(`Checking Services...`)
+  spinner.start(`Checking Services...`)
 
   await Promise.all([
     createDynamoTables(config, services),
@@ -233,7 +245,7 @@ async function initializeServices(container, config, services) {
     createS3Buckets(config, services),
   ])
 
-  debug('All Services Running!')
+  spinner.succeed('Services is running!\n')
 
   return container
 }
@@ -247,7 +259,7 @@ async function createDynamoTables(config, services) {
     })
 
     const result = await Promise.all(config.DynamoDB.map(dynamoTable => dynamoDB.createTable(dynamoTable).promise()))
-    debug('createDynamoTables OK')
+    spinner.start('createDynamoTables OK')
 
     return result
   }
@@ -268,7 +280,7 @@ async function createKinesisStreams(config, services) {
 
     const result = await Promise.all(promises)
 
-    debug('createKinesisStreams OK')
+    spinner.start('createKinesisStreams OK')
 
     return result
   }
@@ -284,7 +296,7 @@ async function createS3Buckets(config, services) {
     })
 
     const result = await Promise.all(config.S3Buckets.map(s3Bucket => s3.createBucket(s3Bucket).promise()))
-    debug('createS3Buckets OK')
+    spinner.start('createS3Buckets OK')
 
     return result
   }
@@ -300,3 +312,4 @@ module.exports.initializeServices = initializeServices
 module.exports.createContainer = createContainer
 module.exports.getContainers = getContainers
 module.exports.stopOldContainers = stopOldContainers
+module.exports.spinner = spinner

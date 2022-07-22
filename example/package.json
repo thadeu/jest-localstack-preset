@@ -1,0 +1,14 @@
+{
+  "name": "example",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "test": "npx jest . --runInBand --detectOpenHandles"
+  },
+  "devDependencies": {
+    "@thadeu/jest-localstack-preset": "file:../",
+    "aws-sdk": "^2",
+    "jest": "^28.1.3"
+  }
+}
