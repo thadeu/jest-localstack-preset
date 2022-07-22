@@ -28,6 +28,7 @@
   "files": [
     "jest-preset.js",
     "setup.js",
+    "utils",
     "teardown.js"
   ],
   "jest": {
