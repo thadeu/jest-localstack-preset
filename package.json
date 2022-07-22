@@ -1,7 +1,7 @@
 {
   "name": "@thadeu/jest-localstack-preset",
-  "version": "1.0.6",
-  "main": "jest-preset.js",
+  "version": "1.0.7",
+  "main": "jest.preset.js",
   "repository": "git@github.com:thadeu/jest-localstack-preset.git",
   "homepage": "https://github.com/thadeu/jest-localstack-preset#README",
   "bugs": {
@@ -26,10 +26,17 @@
     "url": "https://github.com/thadeu"
   },
   "files": [
-    "*"
+    "*",
+    "!example/*",
+    "!test/",
+    "!node_modules/*",
+    "!.github/*"
   ],
   "jest": {
-    "preset": "./jest-preset.js"
+    "preset": "./jest.preset.js",
+    "testPathIgnorePatterns": [
+      "./example/"
+    ]
   },
   "publishConfig": {
     "access": "public"
@@ -37,15 +44,15 @@
   "scripts": {
     "coverage": "jest --coverage",
     "lint": "eslint . --fix",
-    "test": "cross-env DEBUG=jest-localstack-preset LOCALSTACK_DEBUG=true jest . --runInBand --detectOpenHandles"
+    "test": "cross-env LOCALSTACK_DEBUG=false jest . --runInBand --detectOpenHandles"
   },
   "peerDependencies": {
     "aws-sdk": "^2.x.x"
   },
   "dependencies": {
     "cwd": "0.10.0",
-    "debug": "^4.1.1",
-    "dockerode": "^3.3.2"
+    "dockerode": "^3.3.2",
+    "ora": "^5"
   },
   "devDependencies": {
     "@types/node": "^18.0.6",
