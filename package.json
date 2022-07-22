@@ -26,10 +26,7 @@
     "url": "https://github.com/thadeu"
   },
   "files": [
-    "jest-preset.js",
-    "setup.js",
-    "utils.js",
-    "teardown.js"
+    "*"
   ],
   "jest": {
     "preset": "./jest-preset.js"
