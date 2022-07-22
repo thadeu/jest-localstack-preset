@@ -1,7 +1,7 @@
 {
   "name": "@thadeu/jest-localstack-preset",
   "version": "1.0.7",
-  "main": "jest.preset.js",
+  "main": "jest-preset.js",
   "repository": "git@github.com:thadeu/jest-localstack-preset.git",
   "homepage": "https://github.com/thadeu/jest-localstack-preset#README",
   "bugs": {
@@ -27,13 +27,14 @@
   },
   "files": [
     "*",
-    "!example/*",
+    "!example/*/**",
+    "!spec/*/**",
     "!test/",
     "!node_modules/*",
     "!.github/*"
   ],
   "jest": {
-    "preset": "./jest.preset.js",
+    "preset": "./jest-preset.js",
     "testPathIgnorePatterns": [
       "./example/"
     ]
