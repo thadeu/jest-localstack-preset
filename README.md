@@ -9,13 +9,13 @@
 Install via yarn or npm
 
 ```bash
-$ yarn add https://github.com/thadeu/jest-localstack-preset.git
+$ yarn add -D @thadeu/jest-localstack-preset
 ```
 
 or
 
 ```bash
-$ npm i https://github.com/thadeu/jest-localstack-preset.git
+$ npm i -D @thadeu/jest-localstack-preset
 ```
 
 ## Dependencies
