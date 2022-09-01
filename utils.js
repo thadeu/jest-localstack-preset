@@ -88,7 +88,7 @@ async function dockerPullLocalStack(repoTag) {
 async function isDockerLocalStackBlank() {
   let docker = new Docker()
   const allImages = await docker.listImages()
-  const images = allImages.filter(i => i.RepoTags.some(r => r.includes('localstack/localstack')))
+  const images = allImages.filter(i => i.RepoTags && i.RepoTags.some(r => r.includes('localstack/localstack')))
 
   return !images || images.length <= 0
 }
