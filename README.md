@@ -23,7 +23,7 @@ $ npm i -D @thadeu/jest-localstack-preset
 
 - Docker
 - [LocalStack Image](https://docs.localstack.cloud/get-started/#starting-localstack-with-docker)
-- NodeJS >= 12.x
+- NodeJS >= 18.x
 
 ## Configuration
 
@@ -35,6 +35,19 @@ module.exports = {
   setupFiles: ['./jest.setup.js'],
   ...
 }
+```
+
+### Package.json configuration
+
+```js
+  "jest": {
+    "verbose": true,
+    "testEnvironment": "node",
+    "preset": "@thadeu/jest-localstack-preset",
+    "setupFiles": [
+      "<rootDir>/.jest.setup.js"
+    ]
+  },
 ```
 
 Create `jest.localstack.js` file with your required services, for example.
@@ -79,22 +92,22 @@ module.exports = {
 Create a file `jest.setup.js`
 
 ```js
-const AWS = require('aws-sdk')
-
-const { configureMockSDK } = require('@thadeu/jest-localstack-preset/aws')
-configureMockSDK(AWS)
+// Add local configuration 
+process.env.REGION = 'eu-west-2'
 ```
 
 ## Usage
 
-When you use `configureMockSDK` function, we configure many things to you transparently. This means that you going to use `aws-sdk` normally, without change.
+Since aws-sdk v3 each component required individual configuration and `configureMockSDK` function is not required anymore like in version 1.x of this plugin.
 
-> We will apply yhis
+> We will apply this
 
 ```js
 {
-  accessKeyId: 'access-key',
-  secretAccessKey: 'secret-key',
+  credentials: {
+    accessKeyId: 'access-key',
+    secretAccessKey: 'secret-key',
+  },
   region: 'us-east-1',
   endpoint: 'http://localhost:4566',
   s3ForcePathStyle: true,
@@ -108,11 +121,13 @@ So, use custom endpoint `process.env.AWS_ENDPOINT_URL` for general or specific t
 For example to use DynamoDB or S3.
 
 ```js
-const AWS = require('aws-sdk')
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { PutCommand, ScanCommand, DynamoDBDocumentClient } = require("@aws-sdk/lib-dynamodb");
 
-const Table = new AWS.DynamoDB.DocumentClient({
+const client = new DynamoDBClient({
   endpoint: process.env.AWS_DYNAMODB_ENDPOINT_URL,
-})
+});
+const docClient = DynamoDBDocumentClient.from(client);
 ```
 
 So, create your tests using Jest.
@@ -120,19 +135,22 @@ So, create your tests using Jest.
 An example for DynamoDB.
 
 ```js
-const AWS = require('aws-sdk')
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { PutCommand, ScanCommand, DynamoDBDocumentClient } = require("@aws-sdk/lib-dynamodb");
 
-const Table = new AWS.DynamoDB.DocumentClient({
+const client = new DynamoDBClient({
   endpoint: process.env.AWS_DYNAMODB_ENDPOINT_URL,
-})
+});
+const docClient = DynamoDBDocumentClient.from(client);
 
 it('should insert item into table', async () => {
-  await Table.put({
-    TableName: 'users_test',
-    Item: { pk: '1', sk: 'jest-localstack-preset' },
-  }).promise()
+  const putCmd = new PutCommand({ TableName: 'users_test', Item: { pk: '1', sk: 'jest-localstack-preset' } });
+  await docClient.send(putCmd);
 
-  const { Count } = await Table.scan({ TableName: 'users_test' }).promise()
+  const scanCmd = new ScanCommand({ TableName: 'users_test' });
+  const { Count } = 
+  await docClient.send(scanCmd);
+
   expect(Count).toBe(1)
 })
 ```
@@ -140,19 +158,18 @@ it('should insert item into table', async () => {
 An example for S3
 
 ```js
-const AWS = require('aws-sdk')
+const { S3Client, ListBucketsCommand} = require("@aws-sdk/client-s3");
 
-const s3 = new AWS.S3({
-  endpoint: process.env.AWS_ENDPOINT_URL,
-  s3ForcePathStyle: true,
-})
+const { localstackConfig } = require('../aws')
+
+const client = new S3Client(localstackConfig);
 
 it('must be create a bucket', async () => {
-  await s3.createBucket({ Bucket: 'examplebucket' }).promise()
+  const command = new ListBucketsCommand({});
 
-  const { Buckets } = await s3.listBuckets().promise()
+  const { Buckets } =  await client.send(command);
 
-  expect(Buckets.length).toBe(1)
+  // console.log("TEST", Buckets)
   expect(Buckets[0].Name).toBe('examplebucket')
 })
 ```
@@ -161,31 +178,31 @@ Usually you go to use other files, class and functions.
 
 ```js
 // UserReposity.js
-const AWS = require('aws-sdk')
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { PutCommand, ScanCommand, DynamoDBDocumentClient } = require("@aws-sdk/lib-dynamodb");
 
-// =================================================
-// WITH configureMockSDK in your setupFiles
-// =================================================
-const Table = new AWS.DynamoDB.DocumentClient()
-
-// =================================================
-// WITHOUT configureMockSDK
-// =================================================
-// const Table = new AWS.DynamoDB.DocumentClient({
-//   endpoint: process.env.AWS_DYNAMODB_ENDPOINT_URL,
-//   region: process.env.AWS_REGION,
-// })
+const client = new DynamoDBClient({
+  endpoint: process.env.AWS_DYNAMODB_ENDPOINT_URL,
+});
+const docClient = DynamoDBDocumentClient.from(client);
 
 export default class UserReposity {
   static async all(props = {}) {
-    return Table.scan({ TableName: 'users', ...props }).promise()
+    const scanCmd = new ScanCommand({ TableName: 'users', ...props });
+    const response = await docClient.send(scanCmd);
+    
+    return response;
   }
 
   static async save(props) {
-    return Table.put({
+    const putCmd = new PutCommand({
       TableName: 'users',
       ...props,
-    }).promise()
+    });
+
+    const response = await docClient.send(putCmd);
+    return response;
+
   }
 }
 
@@ -262,7 +279,7 @@ jobs:
       - name: Setup NodeJS
         uses: actions/setup-node@v2
         with:
-          node-version: 14.17.x
+          node-version: 18.x
 
       - name: Install Yarn Dependencies
         run: yarn install --frozen-lockfile

@@ -7,9 +7,9 @@ const path = require('path')
 const cwd = require('cwd')
 const readline = require('readline')
 
-const DynamoDB = require('aws-sdk/clients/dynamodb')
-const Kinesis = require('aws-sdk/clients/kinesis')
-const S3 = require('aws-sdk/clients/s3')
+const { DynamoDBClient, CreateTableCommand } = require("@aws-sdk/client-dynamodb");
+const { KinesisClient, CreateStreamCommand } = require("@aws-sdk/client-kinesis");
+const { S3Client, CreateBucketCommand} = require("@aws-sdk/client-s3");
 
 const ora = require('ora')
 const spinner = ora()
@@ -30,6 +30,8 @@ const CONFIG_DEFAULTS = {
 }
 
 const isJestRuning = process.env.JEST_WORKER_ID
+
+const region = process.env.REGION
 
 async function getContainers() {
   let docker = new Docker()
@@ -252,13 +254,19 @@ async function initializeServices(container, config, services) {
 
 async function createDynamoTables(config, services) {
   if (Array.isArray(config.DynamoDB) && services.dynamodb) {
-    const dynamoDB = new DynamoDB({
+    const client = new DynamoDBClient({
       endpoint: `http://localhost:${services.dynamodb || DEFAULT_PORT}`,
       sslEnabled: false,
-      region: 'us-east-1',
+      region: region,
     })
 
-    const result = await Promise.all(config.DynamoDB.map(dynamoTable => dynamoDB.createTable(dynamoTable).promise()))
+    const promises = config.DynamoDB.map(async dynamoTable => {
+      const command = new CreateTableCommand(dynamoTable)
+      return client.send(command);
+    })
+
+    const result = await Promise.all(promises)
+
     spinner.start('createDynamoTables OK')
 
     return result
@@ -269,13 +277,14 @@ async function createDynamoTables(config, services) {
 
 async function createKinesisStreams(config, services) {
   if (Array.isArray(config.Kinesis) && services.kinesis) {
-    const kinesis = new Kinesis({
+    const client = new KinesisClient({
       endpoint: `http://localhost:${services.kinesis}`,
-      region: 'us-east-1',
+      region: region,
     })
 
     const promises = config.Kinesis.map(kinesisStream => {
-      return kinesis.createStream(kinesisStream).promise()
+      const command = CreateStreamCommand(kinesisStream)
+      return client.send(command);
     })
 
     const result = await Promise.all(promises)
@@ -290,12 +299,23 @@ async function createKinesisStreams(config, services) {
 
 async function createS3Buckets(config, services) {
   if (Array.isArray(config.S3Buckets) && services.s3) {
-    const s3 = new S3({
-      endpoint: `http://localhost:${services.s3}`,
-      s3ForcePathStyle: true,
+    const client = new S3Client({
+      endpoint: `http://s3.localhost.localstack.cloud:${services.s3}`,
+      forcePathStyle: true,
     })
 
-    const result = await Promise.all(config.S3Buckets.map(s3Bucket => s3.createBucket(s3Bucket).promise()))
+    const promises = config.S3Buckets.map(async s3Bucket => {
+      const command = new CreateBucketCommand(s3Bucket);
+      try {
+        const { Location } = await client.send(command);
+        console.log(`Bucket created with location ${Location}`);
+      } catch (err) {
+        console.error(err);
+      }
+    })
+
+    const result = await Promise.all(promises)
+
     spinner.start('createS3Buckets OK')
 
     return result

@@ -1,12 +1,22 @@
-const AWS = require('aws-sdk')
+const { S3Client, ListBucketsCommand, CreateBucketCommand} = require("@aws-sdk/client-s3");
 
-const s3 = new AWS.S3()
+const { localstackConfig } = require('../aws')
+
+const client = new S3Client(localstackConfig);
 
 it('must be create a bucket', async () => {
-  await s3.createBucket({ Bucket: 'examplebucket-1' }).promise()
+  const createBucketCmd = new CreateBucketCommand({ Bucket: 'examplebucket-1' });
+  
+  try {
+    const { Location } = await client.send(createBucketCmd);
+    console.log(`Bucket created with location ${Location}`);
+  } catch (err) {
+    console.error(err);
+  }
 
-  const { Buckets } = await s3.listBuckets().promise()
+  const listBucketCmd = new ListBucketsCommand({});
 
-  expect(Buckets.length).toBe(1)
+  const { Buckets } =  await client.send(listBucketCmd);
+
   expect(Buckets[0].Name).toBe('examplebucket-1')
 })

@@ -1,16 +1,11 @@
 const localstackConfig = {
-  accessKeyId: 'access-key',
-  secretAccessKey: 'secret-key',
+  credentials: {
+    accessKeyId: 'access-key',
+    secretAccessKey: 'secret-key',
+  },
   region: 'us-east-1',
-  endpoint: 'http://localhost:4566',
-  s3ForcePathStyle: true,
+  endpoint: 'http://s3.localhost.localstack.cloud:4566',
+  forcePathStyle: true,
 }
 
-const configureMockSDK = sdk => {
-  sdk.config.update(localstackConfig)
-}
-
-module.exports = {
-  configureMockSDK,
-  localstackConfig,
-}
+module.exports = { localstackConfig }

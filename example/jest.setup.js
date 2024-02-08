@@ -1,4 +1,2 @@
-const AWS = require('aws-sdk')
-
-const { configureMockSDK } = require('@thadeu/jest-localstack-preset/aws')
-configureMockSDK(AWS)
+// Add local configuration 
+// process.env.REGION = 'eu-west-2'

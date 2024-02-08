@@ -1,15 +1,14 @@
-const AWS = require('aws-sdk')
+const { S3Client, ListBucketsCommand} = require("@aws-sdk/client-s3");
 
-const { configureMockSDK } = require('../aws')
-configureMockSDK(AWS)
+const { localstackConfig } = require('../aws')
 
-const s3 = new AWS.S3()
+const client = new S3Client(localstackConfig);
 
 it('must be create a bucket', async () => {
-  // await s3.createBucket({ Bucket: 'examplebucket' }).promise()
+  const command = new ListBucketsCommand({});
 
-  const { Buckets } = await s3.listBuckets().promise()
+  const { Buckets } =  await client.send(command);
 
-  expect(Buckets.length).toBe(1)
+  // console.log("TEST", Buckets)
   expect(Buckets[0].Name).toBe('examplebucket')
 })

@@ -14,7 +14,7 @@ const {
 process.env.AWS_ACCESS_KEY_ID = 'access-key'
 process.env.AWS_SECRET_ACCESS_KEY = 'secret-key'
 process.env.AWS_REGION = 'us-east-1'
-process.env.AWS_ENDPOINT_URL = 'http://localhost:4566'
+process.env.AWS_ENDPOINT_URL = 'http://s3.localhost.localstack.cloud:4566'
 process.env.AWS_DYNAMODB_ENDPOINT_URL = 'http://localhost:4566'
 
 async function main() {
